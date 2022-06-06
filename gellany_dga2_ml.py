@@ -57,7 +57,11 @@ class dga():
             self.df = self.dataframe.drop_duplicates()
 
             # Set the class
-            self.df['class'] = 'legit'
+            
+            if self.dga == False:
+                  self.df['class'] = 'legit'
+            if self.dga == True:
+                  self.df['class'] = 'dga'
 
             # Shuffle the data (important for training/testing)
             self.df = self.df.reindex(np.random.permutation(self.df.index))
@@ -154,7 +158,7 @@ dga_dataframe['domain'] = dga_dataframe.applymap(lambda x: x.split('.')[0].strip
 print(alexa_dataframe.head())
 print(alexa_dataframe.tail())            
 dga(dataframe = alexa_dataframe).print_domain_extract()
-dga(dataframe = alexa_dataframe, type = 'alex').preprocessing()
-dga(dataframe = dga_dataframe, type = 'dga').preprocessing()
-#print(all_domains.head())
+dga(dataframe = alexa_dataframe, type = 'alex', dga = False).preprocessing()
+dga(dataframe = dga_dataframe, type = 'dga', dga= True).preprocessing()
+print(dga_final.head())
 dga().core()

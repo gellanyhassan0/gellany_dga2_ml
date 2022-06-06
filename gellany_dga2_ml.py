@@ -1,4 +1,3 @@
-from sklearn import *
 import pandas as pd
 import numpy as np
 import pylab
@@ -7,8 +6,9 @@ import math
 from collections import Counter
 from sklearn import *
 from sklearn.ensemble import *
+from sklearn.metrics import *
 from sklearn.model_selection import *
-
+from matplotlib import pyplot as plt
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -86,7 +86,7 @@ class dga():
             p, lns = Counter(self.s), float(len(self.s))
             return -sum( count/lns * math.log(count/lns, 2) for count in p.values())
 
-    def plot_cm(cm, labels):
+    def plot_cm(self):
     
             # Compute percentanges
             percent = (cm*100.0)/np.array(np.matrix(cm.sum(axis=1)).T)  # Derp, I'm sure there's a better way
@@ -127,13 +127,15 @@ class dga():
             y = np.array(all_domains['class'].tolist())
             clf = RandomForestClassifier(n_estimators=20)
             scores = cross_val_score(clf, X, y, cv=5, n_jobs=4)
-            print(scors)
+            print(scores)
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
             clf.fit(X_train, y_train)
             y_pred = clf.predict(X_test)
+            global labels
             labels = ['legit', 'dga']
-            cm = confusion_matrix(y_test, y_pred, labels)
-            plot_cm(cm, labels)
+            global cm
+            cm = confusion_matrix(y_test, y_pred)
+            dga().plot_cm()
 
 
 

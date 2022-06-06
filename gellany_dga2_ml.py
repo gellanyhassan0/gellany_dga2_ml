@@ -50,12 +50,12 @@ class dga():
 
             # Shuffle the data (important for training/testing)
             alexa_dataframe2 = alexa_dataframe2.reindex(np.random.permutation(alexa_dataframe2.index))
-            alexa_total = alexa_dataframe2.shape[0]
+            alexa_total = len(alexa_dataframe2)
             print('Total Alexa domains %d' % alexa_total)
 
             # Hold out 10%
-            hold_out_alexa = alexa_dataframe2[alexa_total/10:]
-            alexa_dataframe2 = alexa_dataframe2[:alexa_total/10]
+            hold_out_alexa = alexa_dataframe2[:int(alexa_total*10/100)]
+            alexa_dataframe2 = alexa_dataframe2[:int(alexa_total*90/100)]
 
             print('Number of Alexa domains: %d' % alexa_dataframe2.shape[0])
 

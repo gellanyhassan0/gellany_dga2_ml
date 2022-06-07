@@ -16,6 +16,7 @@ from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, AdaBoost
 import operator
 import warnings
 import pickle
+import argparse
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 pylab.rcParams['figure.figsize'] = (14.0, 5.0)
@@ -28,7 +29,7 @@ dga_final = pd.DataFrame()
 
 class dga():
     
-    def __init__(self, uri =None, dataframe = None, type = '', dga = False , s = None, domain = '', data =None , encode = None, domain_without_sub = None):
+    def __init__(self, uri =None, dataframe = None, type = '', dga = False , s = None, domain = '', data =None , encode = None, domain_without_sub = '', domain_entropy = None, domain_length =None):
                
                self.uri = uri
                self.dataframe = dataframe
@@ -39,7 +40,10 @@ class dga():
                self.data = data
                self.encode = encode
                self.domain_without_sub = domain_without_sub
-              
+               self.domain_entropy = domain_entropy
+               self.domain_length = domain_length
+               
+               
 
     def domain_extract(self):
               ext= tldextract.extract(self.uri)
@@ -166,60 +170,75 @@ class dga():
                      evaluator = MulticlassClassificationEvaluator(
                      labelCol="indexed_type", predictionCol="prediction", metricName="accuracy")
                      accuracy = evaluator.evaluate(predictions)
-                     print("Test Error = %g" % (1.0 - accuracy))    
+                     print("Test Error = %g" % (1.0 - accuracy))  
 
 
-    def gellany_avg_transition_prob(self):
-
-              global model_data
-              global model_mat
-              global threshold
-              model_data = pickle.load(open('gib_model.pki', 'rb'))
-              model_mat = model_data['mat']
-              threshold = float(model_data['thresh'])
-              
-              """ Return the average transition prob from l through log_prob_mat. """
-              log_prob = 0.0
-              transition_ct = 0
-              global n
-              n = 2
-              global accepted_chars 
-              accepted_chars = 'abcdefghijklmnopqrstuvwxyz '
-              global pos
-              pos = dict([(char, idx) for idx, char in enumerate(accepted_chars)]) 
-              #print("pos", pos)
-              s = self.domain_without_sub
-              i = 0
-              for i in range(0, len(s), 1):
-                 
-                  try :
-                     a, b = s[i:i+2]
-                     #print("s[i:i+2]", s[i:i+2])
-                     #print("a, b", a, b)
-                     #print("[pos[a]][pos[b]]",[pos[a]]+[pos[b]])
-                     log_prob += model_mat[pos[a]][pos[b]]
-                     transition_ct += 1
-                     print("transition_ct", transition_ct)
-                     print("log_prob", log_prob)
+    def entropy_check(self):
+                  
                     
-                  except Exception:
-                                  pass
+                   
+                    global l
+                    l = self.domain_without_sub
+                    
+                    if not dga().avg_transition_prob() > threshold:
+                           print("Domain %s is DGA!" % args.domain)
+                           return 1
+                    else: 
+                           print("Domain %s is clean!" % args.domain)
+                           return 0
+
+    def avg_transition_prob(self):
+                    #s = l
+                    #global string
+                    try :
+                         s = l
+                    except :
+                         s = self.s
+                    
+                    
+                    """ Return the average transition prob from l through log_prob_mat. """
+                    log_prob = 0.0
+                    transition_ct = 0
+                    global n
+                    n = 2
+                    global accepted_chars 
+                    accepted_chars = 'abcdefghijklmnopqrstuvwxyz '
+                    global pos
+                    pos = dict([(char, idx) for idx, char in enumerate(accepted_chars)]) 
+                    #print("pos", pos)
+                    
+                    i = 0
+                    for i in range(0, len(s), 1):
+                       
+                        try :
+                           a, b = s[i:i+2]
+                           #print("s[i:i+2]", s[i:i+2])
+                           #print("a, b", a, b)
+                           #print("[pos[a]][pos[b]]",[pos[a]]+[pos[b]])
+                           log_prob += model_mat[pos[a]][pos[b]]
+                           transition_ct += 1
+                           print("transition_ct", transition_ct)
+                           print("log_prob", log_prob)
+                          
+                        except Exception:
+                                        pass
 
 
-              #print("transition_ct_final", transition_ct)
-              #print("log_prob_final", log_prob)
-              # The exponentiation translates from log probs to probs.
-              print("math.exp(log_prob / (transition_ct or 1)", math.exp(log_prob / (transition_ct or 1)))
-              return math.exp(log_prob / (transition_ct or 1))
-    
+                    #print("transition_ct_final", transition_ct)
+                    #print("log_prob_final", log_prob)
+                    # The exponentiation translates from log probs to probs.
+                    #print("math.exp(log_prob / (transition_ct or 1)", math.exp(log_prob / (transition_ct or 1)))
+                    return math.exp(log_prob / (transition_ct or 1))
+
 
   
     def test_it(self):
                      all_domains['class'] = all_domains['class'].map({'legit':0, 'dga':1})
                      all_domains['domain'] = all_domains['domain'].astype(str)
        
-                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain_without_sub = x).gellany_avg_transition_prob() > threshold else 1.0)
-                     
+                     #all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain_without_sub = x).gellany_avg_transition_prob() > threshold else 1.0)
+                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(s = x).avg_transition_prob() > threshold else 1.0)
+
                      print(all_domains.dtypes)
                      print(all_domains.head())
                      all_domains.to_csv("all_domains2.csv")
@@ -234,9 +253,55 @@ class dga():
                      print('Accuracy score for', model, format(accuracy_score(y_test, model_pred)))
                
                      print('F1 score for' ,model, format(f1_score(y_test, model_pred)))
+    
+def main():
+                    
+                     if args.domain :
+                                 dga(domain_without_sub = args.domain).entropy_check()
+                           
+                     else:
+
+
+                                
+                                 global alexa_dataframe
+                                 global dga_dataframe
+ 
+                                 alexa_dataframe = pd.read_csv(args.file_normal, names=['rank', 'uri'], header=None, encoding='utf-8')
+                                 dga_dataframe = pd.read_csv(args.file_dga, names=['raw_domain'], header=None, encoding='utf-8')
+                                 dga_dataframe['domain'] = dga_dataframe.applymap(lambda x: x.split('.')[0].strip().lower())
+                                 word_dataframe = pd.read_table('data/words.txt', names=['word'])
+                                 #word_dataframe = word_dataframe.fillna(0.0, inplace=True)
+                                 print(word_dataframe)
+
+                                 #alexa_dataframe2 = pd.DataFrame()
+                                 print(alexa_dataframe.head())
+                                 print(alexa_dataframe.tail())            
+                                 dga(dataframe = alexa_dataframe).print_domain_extract()
+                                 dga(dataframe = alexa_dataframe, type = 'alex', dga = False).preprocessing()
+                                 dga(dataframe = dga_dataframe, type = 'dga', dga= True).preprocessing()
+                                 print(dga_final.head())
+                                 dga().core()
+
+                                 dga().test_it()
+      
+ 
+
             
-             
-           
+
+my_parser = argparse.ArgumentParser()
+my_parser.add_argument("-d", "--domain", help="Domain to check")
+my_parser.add_argument("-fn", "--file_normal", help="File with normal. One per line")
+my_parser.add_argument("-fd", "--file_dga", help="File with dga. One per line")
+args = my_parser.parse_args()
+
+model_data = pickle.load(open('gib_model.pki', 'rb'))
+model_mat = model_data['mat']
+threshold = float(model_data['thresh'])
+print('threshold', threshold)
+
+
+main()
+   
             
       
             
@@ -245,20 +310,3 @@ class dga():
 
 
         
-alexa_dataframe = pd.read_csv('data/alexa_100k.csv', names=['rank', 'uri'], header=None, encoding='utf-8')
-dga_dataframe = pd.read_csv('data/dga_domains.txt', names=['raw_domain'], header=None, encoding='utf-8')
-dga_dataframe['domain'] = dga_dataframe.applymap(lambda x: x.split('.')[0].strip().lower())
-word_dataframe = pd.read_table('data/words.txt', names=['word'])
-#word_dataframe = word_dataframe.fillna(0.0, inplace=True)
-print(word_dataframe)
-
-#alexa_dataframe2 = pd.DataFrame()
-print(alexa_dataframe.head())
-print(alexa_dataframe.tail())            
-dga(dataframe = alexa_dataframe).print_domain_extract()
-dga(dataframe = alexa_dataframe, type = 'alex', dga = False).preprocessing()
-dga(dataframe = dga_dataframe, type = 'dga', dga= True).preprocessing()
-print(dga_final.head())
-dga().core()
-
-dga().test_it()

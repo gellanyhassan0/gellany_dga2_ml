@@ -8,5 +8,10 @@ threshold 0.018782003473122023
 math.exp(log_prob / (transition_ct or 1) 0.0034698353681716747
 Domain isqekc is DGA!</code><br>
 
+<code>python3 gellany_dga2_ml.py -d google
+threshold 0.018782003473122023
+math.exp(log_prob / (transition_ct or 1) 0.03488552714083014
+Domain google is clean!</code><br>
+
 
 

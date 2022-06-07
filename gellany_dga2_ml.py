@@ -11,8 +11,11 @@ from sklearn.model_selection import *
 from sklearn.feature_extraction.text import CountVectorizer
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, AdaBoostClassifier
 import operator
 import warnings
+import pickle
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 pylab.rcParams['figure.figsize'] = (14.0, 5.0)
@@ -25,7 +28,7 @@ dga_final = pd.DataFrame()
 
 class dga():
     
-    def __init__(self, uri =None, dataframe = None, type = '', dga = False , s = None, domain = '', data =None , encode = None):
+    def __init__(self, uri =None, dataframe = None, type = '', dga = False , s = None, domain = '', data =None , encode = None, domain_without_sub = None):
                
                self.uri = uri
                self.dataframe = dataframe
@@ -35,7 +38,7 @@ class dga():
                self.domain = domain
                self.data = data
                self.encode = encode
-               
+               self.domain_without_sub = domain_without_sub
               
 
     def domain_extract(self):
@@ -150,56 +153,87 @@ class dga():
                      self.data[self.encode][self.data[self.encode].isna()] = 'NaN'
                      
                      ord_enc = OrdinalEncoder()
-                     ord_enc = ord_enc.fit(self.data[[self.encode]])
-                     self.data[[self.encode]] = ord_enc.transform(self.data[[self.encode]])
+                     ord_enc = ord_enc.fit(self.data[self.encode])
+                     self.data[self.encode] = ord_enc.transform(self.data[self.encode])
 
 
 
+    def evaluate_models(self):
+                     # Select example rows to display.
+                     predictions.select("Domain","Type","features","predictedLabel").show(50)
+
+                     # Select (prediction, true label) and compute test error
+                     evaluator = MulticlassClassificationEvaluator(
+                     labelCol="indexed_type", predictionCol="prediction", metricName="accuracy")
+                     accuracy = evaluator.evaluate(predictions)
+                     print("Test Error = %g" % (1.0 - accuracy))    
+
+
+    def gellany_avg_transition_prob(self):
+
+              global model_data
+              global model_mat
+              global threshold
+              model_data = pickle.load(open('gib_model.pki', 'rb'))
+              model_mat = model_data['mat']
+              threshold = float(model_data['thresh'])
+              
+              """ Return the average transition prob from l through log_prob_mat. """
+              log_prob = 0.0
+              transition_ct = 0
+              global n
+              n = 2
+              global accepted_chars 
+              accepted_chars = 'abcdefghijklmnopqrstuvwxyz '
+              global pos
+              pos = dict([(char, idx) for idx, char in enumerate(accepted_chars)]) 
+              #print("pos", pos)
+              s = self.domain_without_sub
+              i = 0
+              for i in range(0, len(s), 1):
+                 
+                  try :
+                     a, b = s[i:i+2]
+                     #print("s[i:i+2]", s[i:i+2])
+                     #print("a, b", a, b)
+                     #print("[pos[a]][pos[b]]",[pos[a]]+[pos[b]])
+                     log_prob += model_mat[pos[a]][pos[b]]
+                     transition_ct += 1
+                     print("transition_ct", transition_ct)
+                     print("log_prob", log_prob)
+                    
+                  except Exception:
+                                  pass
+
+
+              #print("transition_ct_final", transition_ct)
+              #print("log_prob_final", log_prob)
+              # The exponentiation translates from log probs to probs.
+              print("math.exp(log_prob / (transition_ct or 1)", math.exp(log_prob / (transition_ct or 1)))
+              return math.exp(log_prob / (transition_ct or 1))
+    
+
+  
     def test_it(self):
+                     all_domains['class'] = all_domains['class'].map({'legit':0, 'dga':1})
+                     all_domains['domain'] = all_domains['domain'].astype(str)
+       
+                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain_without_sub = x).gellany_avg_transition_prob() > threshold else 1.0)
+                     
+                     print(all_domains.dtypes)
+                     print(all_domains.head())
+                     all_domains.to_csv("all_domains2.csv")
+                    
+                     
+                     X_train, X_test, y_train, y_test = train_test_split(all_domains[["domain_new","length","entropy"]], all_domains["class"] , test_size=0.2, random_state=42)
+                     
+                     model = RandomForestClassifier()
+                     model.fit(X_train,y_train)
+                     model_pred = model.predict(X_test)
 
-            #ord_enc = OrdinalEncoder()
-            #ord_enc = ord_enc.fit(self.domain)
-            #self.domain = ord_enc.transform(self.domain)
-            df_test = pd.read_csv('test.csv', names=['domain'], header=None)
-            print(df_test.head())
-            df_test['length'] = df_test['domain'].str.len()
-            df_test['entropy'] = dga(s = df_test['domain']).entropy()
-            print(df_test.head())
-            
-            
-            
-
-            #dga(data = all_domains, encode = domain).ordinal_encode()
-            
-
-            from sklearn.feature_extraction.text import TfidfVectorizer
-            tfidf_vect= TfidfVectorizer(use_idf=True, smooth_idf=True, sublinear_tf=False)
-            count_vect = CountVectorizer()
-            global all_domains2
-            all_domains2 = all_domains
-            #all_domains2['domain'] = count_vect.fit_transform(all_domains['domain'].values)
-            #all_domains2['domain'] = tfidf_vect.fit_transform(all_domains['domain'].values)
-            all_domains2['domain'] = dga(data = all_domains, encode= 'domain').ordinal_encode()
-            print(all_domains2.head())
-            all_domains2 = all_domains2[['domain', 'length', 'entropy']]
-            #df_test['domain'] = count_vect.fit_transform(df_test['domain'].values)
-            #df_test['domain'] = tfidf_vect.fit_transform(df_test['domain'].values)
-            df_test['domain'] = dga(data = df_test, encode= 'domain').ordinal_encode()
-            print(df_test.head())
-            label = all_domains['class']
-            label = label.map({'legit':0, 'dga':1})
-            
-            X_train, X_test, y_train, y_test = train_test_split(all_domains2, label, test_size=0.2, random_state=42)
-            
-            model = RandomForestClassifier()
-            model.fit(X_train,y_train)
-            model_pred = mod.predict(df_test)
-
-            print('%s %',  (model_pred[0]))        
-
-
-            
-            
+                     print('Accuracy score for', model, format(accuracy_score(y_test, model_pred)))
+               
+                     print('F1 score for' ,model, format(f1_score(y_test, model_pred)))
             
              
            
@@ -207,6 +241,7 @@ class dga():
       
             
             
+
 
 
         

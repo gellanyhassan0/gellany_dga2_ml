@@ -269,11 +269,7 @@ def main():
                                  alexa_dataframe = pd.read_csv(args.file_normal, names=['rank', 'uri'], header=None, encoding='utf-8')
                                  dga_dataframe = pd.read_csv(args.file_dga, names=['raw_domain'], header=None, encoding='utf-8')
                                  dga_dataframe['domain'] = dga_dataframe.applymap(lambda x: x.split('.')[0].strip().lower())
-                                 word_dataframe = pd.read_table('data/words.txt', names=['word'])
-                                 #word_dataframe = word_dataframe.fillna(0.0, inplace=True)
-                                 print(word_dataframe)
 
-                                 #alexa_dataframe2 = pd.DataFrame()
                                  print(alexa_dataframe.head())
                                  print(alexa_dataframe.tail())            
                                  dga(dataframe = alexa_dataframe).print_domain_extract()

@@ -217,8 +217,8 @@ class dga():
                            #print("[pos[a]][pos[b]]",[pos[a]]+[pos[b]])
                            log_prob += model_mat[pos[a]][pos[b]]
                            transition_ct += 1
-                           print("transition_ct", transition_ct)
-                           print("log_prob", log_prob)
+                           #print("transition_ct", transition_ct)
+                           #print("log_prob", log_prob)
                           
                         except Exception:
                                         pass
@@ -227,7 +227,7 @@ class dga():
                     #print("transition_ct_final", transition_ct)
                     #print("log_prob_final", log_prob)
                     # The exponentiation translates from log probs to probs.
-                    #print("math.exp(log_prob / (transition_ct or 1)", math.exp(log_prob / (transition_ct or 1)))
+                    print("math.exp(log_prob / (transition_ct or 1)", math.exp(log_prob / (transition_ct or 1)))
                     return math.exp(log_prob / (transition_ct or 1))
 
 

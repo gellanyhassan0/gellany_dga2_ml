@@ -212,7 +212,7 @@ class dga():
                     #print("transition_ct_final", transition_ct)
                     #print("log_prob_final", log_prob)
                     # The exponentiation translates from log probs to probs.
-                    print("math.exp(log_prob / (transition_ct or 1)", math.exp(log_prob / (transition_ct or 1)))
+                    #print("math.exp(log_prob / (transition_ct or 1)", math.exp(log_prob / (transition_ct or 1)))
                     return math.exp(log_prob / (transition_ct or 1))
    
     def ngram_count(self):
@@ -243,7 +243,7 @@ class dga():
                      all_domains['domain'] = all_domains['domain'].astype(str)
        
                      #all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain_without_sub = x).gellany_avg_transition_prob() > threshold else 1.0)
-                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(s = x).avg_transition_prob() > 0.005 else 1.0)
+                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(s = x).avg_transition_prob() > threshold else 1.0)
                      #all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain = x).ngram_count() > 1.0 else 1.0)
                      print(all_domains.dtypes)
                      print(all_domains.head())
@@ -325,7 +325,8 @@ args = my_parser.parse_args()
 
 model_data = pickle.load(open('gib_model.pki', 'rb'))
 model_mat = model_data['mat']
-threshold = float(model_data['thresh'])
+#threshold = float(model_data['thresh'])
+threshold = 0.009
 print('threshold', threshold)
 
 main()

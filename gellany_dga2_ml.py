@@ -215,6 +215,25 @@ class dga():
                     # The exponentiation translates from log probs to probs.
                     print("math.exp(log_prob / (transition_ct or 1)", math.exp(log_prob / (transition_ct or 1)))
                     return math.exp(log_prob / (transition_ct or 1))
+   
+    def ngram_count(self):
+                   global alexa_vc
+                   global dict_vc
+                   alexa_vc = CountVectorizer(analyzer='char', ngram_range=(3,5), min_df=1e-4, max_df=1.0)
+                   #alexa_vc.get_feature_names()
+                   
+                   dict_vc = CountVectorizer(analyzer='char', ngram_range=(3,5), min_df=1e-5, max_df=1.0)
+                   #dict_vc.get_feature_names()
+
+                   counts_matrix_alexa = alexa_vc.fit_transform(all_domains['domain'])
+                   counts_matrix_dict = dict_vc.fit_transform(all_domains['domain'])
+
+                   alexa_counts = np.log10(counts_matrix_alexa.sum(axis=0).getA1())
+                   dict_counts = np.log10(counts_matrix_dict.sum(axis=0).getA1())
+
+                   alexa_match = alexa_counts * alexa_vc.transform([self.domain]).T  # Woot vector multiply and transpose Woo Hoo!
+                   dict_match = dict_counts * dict_vc.transform([self.domain]).T
+                   print('%s Alexa match:%d Dict match: %d' % (self.domain, alexa_match, dict_match))
 
 
   
@@ -266,6 +285,12 @@ def main():
                                  print(dga_final.head())
                                  dga().core()
 
+                                 dga(domain = 'google').ngram_count()
+                                 dga(domain = 'facebook').ngram_count()
+                                 dga(domain = '1cb8a5f36f').ngram_count()
+                                 dga(domain = 'pterodactylfarts').ngram_count()
+                                 dga(domain = 'ptes9dro-dwacty2lfa5rrts').ngram_count()
+
                                  dga().test_it()
       
  
@@ -276,13 +301,30 @@ my_parser = argparse.ArgumentParser()
 my_parser.add_argument("-d", "--domain", help="Domain to check")
 my_parser.add_argument("-fn", "--file_normal", help="File with normal. One per line")
 my_parser.add_argument("-fd", "--file_dga", help="File with dga. One per line")
+my_parser.add_argument("-fw", "--file_word", help="File with words. One per line")
 args = my_parser.parse_args()
+
+
+#try:
+#model_data = pd.read_csv(args.file_word, names=['word'], header=None, dtype={'word': np.str}, encoding='utf-8')
+#dga(domain = 'google').ngram_count()
+#dga(domain = 'facebook').ngram_count()
+#dga(domain = '1cb8a5f36f').ngram_count()
+#dga(domain = 'pterodactylfarts').ngram_count()
+#dga(domain = 'ptes9dro-dwacty2lfa5rrts').ngram_count()
+      
+
+
+#except :
+      #model_data = pickle.load(open('gib_model.pki', 'rb'))
+      #model_mat = model_data['mat']
+      #threshold = float(model_data['thresh'])
+      #print('threshold', threshold)
 
 model_data = pickle.load(open('gib_model.pki', 'rb'))
 model_mat = model_data['mat']
 threshold = float(model_data['thresh'])
 print('threshold', threshold)
-
 
 main()
    

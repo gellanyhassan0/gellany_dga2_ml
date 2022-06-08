@@ -17,7 +17,6 @@ from sklearn.naive_bayes import MultinomialNB, GaussianNB
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.svm import SVC
 import operator
 import warnings
 import pickle
@@ -220,10 +219,10 @@ class dga():
                    global alexa_vc
                    global dict_vc
                    alexa_vc = CountVectorizer(analyzer='char', ngram_range=(3,5), min_df=1e-4, max_df=1.0)
-                   #alexa_vc.get_feature_names()
+                   
                    
                    dict_vc = CountVectorizer(analyzer='char', ngram_range=(3,5), min_df=1e-5, max_df=1.0)
-                   #dict_vc.get_feature_names()
+                   
 
                    counts_matrix_alexa = alexa_vc.fit_transform(all_domains['domain'])
                    counts_matrix_dict = dict_vc.fit_transform(all_domains['domain'])
@@ -233,6 +232,7 @@ class dga():
 
                    alexa_match = alexa_counts * alexa_vc.transform([self.domain]).T  # Woot vector multiply and transpose Woo Hoo!
                    dict_match = dict_counts * dict_vc.transform([self.domain]).T
+
                    print('log alexa/dict', self.domain, math.exp(alexa_match / (dict_match or 1)))
                    return math.exp(alexa_match / (dict_match or 1))
 
@@ -243,15 +243,15 @@ class dga():
                      all_domains['domain'] = all_domains['domain'].astype(str)
        
                      #all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain_without_sub = x).gellany_avg_transition_prob() > threshold else 1.0)
-                     #all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(s = x).avg_transition_prob() > threshold else 1.0)
-                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain = x).ngram_count() > 1.0 else 1.0)
+                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(s = x).avg_transition_prob() > 0.005 else 1.0)
+                     #all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain = x).ngram_count() > 1.0 else 1.0)
                      print(all_domains.dtypes)
                      print(all_domains.head())
                      all_domains.to_csv("all_domains2.csv")
                     
                      all_domains.fillna(0.0, inplace=True)
                      X_train, X_test, y_train, y_test = train_test_split(all_domains[["domain_new","length","entropy"]], all_domains["class"] , test_size=0.2, random_state=42)
-                     for mod in [RandomForestClassifier(), AdaBoostClassifier(), DecisionTreeClassifier(), BaggingClassifier(), MultinomialNB(), SVC(), GaussianNB(), KNeighborsClassifier(), LogisticRegression(), GradientBoostingClassifier()]:
+                     for mod in [RandomForestClassifier(), AdaBoostClassifier(), DecisionTreeClassifier(), BaggingClassifier(), MultinomialNB(), GaussianNB(), KNeighborsClassifier(), LogisticRegression(), GradientBoostingClassifier()]:
                                          
                                    print(mod)
                                    model = mod
@@ -286,12 +286,12 @@ def main():
                                  print(dga_final.head())
                                  dga().core()
                                 
-                                 dga(domain = 'isqekc').ngram_count()
-                                 dga(domain = 'google').ngram_count()
-                                 dga(domain = 'facebook').ngram_count()
-                                 dga(domain = '1cb8a5f36f').ngram_count()
-                                 dga(domain = 'pterodactylfarts').ngram_count()
-                                 dga(domain = 'ptes9dro-dwacty2lfa5rrts').ngram_count()
+                                 #dga(domain = 'isqekc').ngram_count()
+                                 #dga(domain = 'google').ngram_count()
+                                 #dga(domain = 'facebook').ngram_count()
+                                 #dga(domain = '1cb8a5f36f').ngram_count()
+                                 #dga(domain = 'pterodactylfarts').ngram_count()
+                                 #dga(domain = 'ptes9dro-dwacty2lfa5rrts').ngram_count()
 
                                  dga().test_it()
       

@@ -12,7 +12,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.naive_bayes import MultinomialNB, GaussianNB
+from sklearn.linear_model import SGDClassifier, LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
 import operator
 import warnings
 import pickle
@@ -243,16 +248,18 @@ class dga():
                      print(all_domains.head())
                      all_domains.to_csv("all_domains2.csv")
                     
-                     
+                     all_domains.fillna(0.0, inplace=True)
                      X_train, X_test, y_train, y_test = train_test_split(all_domains[["domain_new","length","entropy"]], all_domains["class"] , test_size=0.2, random_state=42)
-                     
-                     model = RandomForestClassifier()
-                     model.fit(X_train,y_train)
-                     model_pred = model.predict(X_test)
+                     for mod in [RandomForestClassifier(), AdaBoostClassifier(), DecisionTreeClassifier(), BaggingClassifier(), MultinomialNB(), SVC(), GaussianNB(), KNeighborsClassifier(), LogisticRegression(), GradientBoostingClassifier()]:
+                                         
+                                   print(mod)
+                                   model = mod
+                                   model.fit(X_train,y_train)
+                                   model_pred = model.predict(X_test)
 
-                     print('Accuracy score for', model, format(accuracy_score(y_test, model_pred)))
-               
-                     print('F1 score for' ,model, format(f1_score(y_test, model_pred)))
+                                   print('Accuracy score for', model, format(accuracy_score(y_test, model_pred)))
+                                   print('F1 score for' ,model, format(f1_score(y_test, model_pred)))
+                                   continue
     
 def main():
                     

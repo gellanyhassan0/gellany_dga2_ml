@@ -13,6 +13,11 @@ threshold 0.018782003473122023</code><br>
 math.exp(log_prob / (transition_ct or 1) 0.03488552714083014</code><br>
 Domain google is clean!</code><br>
 
+<code>python3 gellany_dga2_ml.py -d congresomundialjjrperu2009
+threshold 0.018782003473122023
+math.exp(log_prob / (transition_ct or 1) 0.03713399431330488
+Domain congresomundialjjrperu2009 is clean!</code><br>
+
 <code>python3 gellany_dga2_ml.py -h
 usage: gellany_dga2_ml.py [-h] [-d DOMAIN] [-fn FILE_NORMAL] [-fd FILE_DGA]
 

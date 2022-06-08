@@ -157,26 +157,7 @@ class dga():
             cm = confusion_matrix(y_test, y_pred)
             dga().plot_cm()
             
-    def ordinal_encode(self):
-                     
-                     self.data[self.encode][self.data[self.encode].isna()] = 'NaN'
-                     
-                     ord_enc = OrdinalEncoder()
-                     ord_enc = ord_enc.fit(self.data[self.encode])
-                     self.data[self.encode] = ord_enc.transform(self.data[self.encode])
-
-
-
-    def evaluate_models(self):
-                     # Select example rows to display.
-                     predictions.select("Domain","Type","features","predictedLabel").show(50)
-
-                     # Select (prediction, true label) and compute test error
-                     evaluator = MulticlassClassificationEvaluator(
-                     labelCol="indexed_type", predictionCol="prediction", metricName="accuracy")
-                     accuracy = evaluator.evaluate(predictions)
-                     print("Test Error = %g" % (1.0 - accuracy))  
-
+    
 
     def entropy_check(self):
                   
@@ -185,7 +166,7 @@ class dga():
                     global l
                     l = self.domain_without_sub
                     
-                    if not dga().avg_transition_prob() > threshold:
+                    if not dga().avg_transition_prob() > threshold and len(l) <= 6:
                            print("Domain %s is DGA!" % args.domain)
                            return 1
                     else: 

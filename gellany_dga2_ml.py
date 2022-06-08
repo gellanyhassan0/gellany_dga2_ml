@@ -233,7 +233,8 @@ class dga():
 
                    alexa_match = alexa_counts * alexa_vc.transform([self.domain]).T  # Woot vector multiply and transpose Woo Hoo!
                    dict_match = dict_counts * dict_vc.transform([self.domain]).T
-                   print('%s Alexa match:%d Dict match: %d' % (self.domain, alexa_match, dict_match))
+                   print('log alexa/dict', self.domain, math.exp(alexa_match / (dict_match or 1)))
+                   return math.exp(alexa_match / (dict_match or 1))
 
 
   
@@ -242,8 +243,8 @@ class dga():
                      all_domains['domain'] = all_domains['domain'].astype(str)
        
                      #all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain_without_sub = x).gellany_avg_transition_prob() > threshold else 1.0)
-                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(s = x).avg_transition_prob() > threshold else 1.0)
-
+                     #all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(s = x).avg_transition_prob() > threshold else 1.0)
+                     all_domains['domain_new'] = all_domains['domain'].apply(lambda x : 0.0 if dga(domain = x).ngram_count() > 1.0 else 1.0)
                      print(all_domains.dtypes)
                      print(all_domains.head())
                      all_domains.to_csv("all_domains2.csv")
@@ -284,7 +285,8 @@ def main():
                                  dga(dataframe = dga_dataframe, type = 'dga', dga= True).preprocessing()
                                  print(dga_final.head())
                                  dga().core()
-
+                                
+                                 dga(domain = 'isqekc').ngram_count()
                                  dga(domain = 'google').ngram_count()
                                  dga(domain = 'facebook').ngram_count()
                                  dga(domain = '1cb8a5f36f').ngram_count()

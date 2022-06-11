@@ -1,4 +1,5 @@
 # gellany_dga2_ml
+achive machine learining algo refacotring from other resource as OOP to the prediction of Domain generation algorithms (DGA) algo according on entroby algo 
 
 we forked and refactory from https://github.com/SuperCowPowers/data_hacking/tree/master/dga_detection and combine with https://github.com/gellanyhassan0/gellany_dga
 

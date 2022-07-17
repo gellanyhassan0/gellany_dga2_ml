@@ -1,5 +1,5 @@
 # gellany_dga2_ml
-machine learning model as OOP algo refactoring from other resource to threat hunting by the prediction of Domain generation algorithms (DGA) algo based on entroby algo 
+machine learning model as OOP algo refactoring from other resource to threat hunting by the prediction of Domain generation algorithms (DGA) algo based on entropy algo 
 
 we forked and refactory from https://github.com/SuperCowPowers/data_hacking/tree/master/dga_detection and combine with https://github.com/gellanyhassan0/gellany_dga
 
